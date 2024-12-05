@@ -5,53 +5,93 @@ import 'utils/nada_validators.dart';
 import 'widgets/nada_custom_text_field.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const NadaApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class NadaApp extends StatelessWidget {
+  const NadaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'CustomFont',
         colorScheme: const ColorScheme.light(
           primary: NadaAppColors.nadaPrimary,
           surface: NadaAppColors.nadaBackground,
         ),
         scaffoldBackgroundColor: NadaAppColors.nadaBackground,
       ),
-      home: const MyForm(),
+      home: const NadaForm(),
     );
   }
 }
 
-class MyForm extends StatefulWidget {
-  const MyForm({super.key});
+class NadaForm extends StatefulWidget {
+  const NadaForm({super.key});
 
   @override
-  State<MyForm> createState() => _MyFormState();
+  State<NadaForm> createState() => _NadaFormState();
 }
 
-class _MyFormState extends State<MyForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _formData = NadaFormData();
-  bool isArabic = false;
+class _NadaFormState extends State<NadaForm> with TickerProviderStateMixin {
+  final _nadaFormKey = GlobalKey<FormState>();
+  final _nadaFormData = NadaFormData();
+  bool nadaIsArabic = false;
+  late AnimationController _nadaLanguageController;
+  late Animation<double> _nadaRotateAnimation;
+  late AnimationController _nadaButtonController;
+  late Animation<double> _nadaButtonAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _nadaLanguageController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _nadaRotateAnimation = Tween<double>(
+      begin: 0,
+      end: 2 * 3.14159, // Full rotation (2π)
+    ).animate(CurvedAnimation(
+      parent: _nadaLanguageController,
+      curve: Curves.easeInOut,
+    ));
+
+    _nadaButtonController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _nadaButtonAnimation = Tween<double>(begin: 1, end: 0.95).animate(
+      CurvedAnimation(
+        parent: _nadaButtonController,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _nadaLanguageController.dispose();
+    _nadaButtonController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _nadaBuildAppBar(),
       backgroundColor: NadaAppColors.nadaBackground,
-      body: _buildBody(),
+      body: _nadaBuildBody(),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _nadaBuildAppBar() {
     return AppBar(
       title: Text(
-        isArabic ? 'استمارة ندى' : 'Nada\'s Form',
+        nadaIsArabic ? 'استمارة ندى' : 'Nada\'s Form',
         style: const TextStyle(
           fontWeight: FontWeight.w500,
           letterSpacing: 0.5,
@@ -64,9 +104,9 @@ class _MyFormState extends State<MyForm> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _nadaBuildBody() {
     return Directionality(
-      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: nadaIsArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -82,15 +122,15 @@ class _MyFormState extends State<MyForm> {
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Form(
-                      key: _formKey,
+                      key: _nadaFormKey,
                       child: Column(
-                        crossAxisAlignment: isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                        crossAxisAlignment: nadaIsArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                         children: [
-                          _buildHeader(),
+                          _nadaBuildHeader(),
                           const SizedBox(height: 32),
-                          _buildFormFields(),
+                          _nadaBuildFormFields(),
                           const SizedBox(height: 32),
-                          _buildSubmitButton(),
+                          _nadaBuildSubmitButton(),
                         ],
                       ),
                     ),
@@ -98,57 +138,9 @@ class _MyFormState extends State<MyForm> {
                 ),
                 Positioned(
                   top: 16,
-                  left: isArabic ? 16 : null,
-                  right: isArabic ? null : 16,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: NadaAppColors.nadaPrimary,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            isArabic = !isArabic;
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.language,
-                                color: NadaAppColors.nadaWhite,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                isArabic ? 'EN' : 'عربي',
-                                style: const TextStyle(
-                                  color: NadaAppColors.nadaWhite,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  left: nadaIsArabic ? 16 : null,
+                  right: nadaIsArabic ? null : 16,
+                  child: _nadaBuildLanguageToggle(),
                 ),
               ],
             ),
@@ -158,26 +150,26 @@ class _MyFormState extends State<MyForm> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _nadaBuildHeader() {
     return Align(
-      alignment: isArabic ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: nadaIsArabic ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
-        crossAxisAlignment: isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: nadaIsArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Text(
-            isArabic ? 'المعلومات الشخصية' : 'Personal Information',
+            nadaIsArabic ? 'المعلومات الشخصية' : 'Personal Information',
             style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
+              fontSize: 26,
+              fontWeight: FontWeight.w500,
               color: NadaAppColors.nadaTextPrimary,
               height: 1.3,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            isArabic ? 'يرجى ملء التفاصيل الخاصة بك أدناه' : 'Please fill in your details below',
+            nadaIsArabic ? 'يرجى ملء التفاصيل الخاصة بك أدناه' : 'Please fill in your details below',
             style:const TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               color: NadaAppColors.nadaTextSecondary,
               height: 1.5,
             ),
@@ -187,100 +179,114 @@ class _MyFormState extends State<MyForm> {
     );
   }
 
-  Widget _buildFormFields() {
+  Widget _nadaBuildFormFields() {
     return Column(
       children: [
         NadaCustomTextField(
-          nadaLabel: isArabic ? 'الاسم الأول' : 'First Name',
-          nadaHint: isArabic ? 'أدخل اسمك الأول' : 'Enter your first name',
+          nadaLabel: nadaIsArabic ? 'الاسم الأول' : 'First Name',
+          nadaHint: nadaIsArabic ? 'أدخل اسمك الأول' : 'Enter your first name',
           nadaIcon: Icons.person_outline,
-          nadaOnChanged: (value) => _formData.nadaFirstName = value,
+          nadaOnChanged: (value) => _nadaFormData.nadaFirstName = value,
           nadaValidator: (value) => NadaFormValidators.nadaValidateField(
             value, 
-            isArabic ? 'الاسم الأول' : 'first name'
+            nadaIsArabic ? 'الاسم الأول' : 'first name'
           ),
         ),
         const SizedBox(height: 24),
         NadaCustomTextField(
-          nadaLabel: isArabic ? 'اسم العائلة' : 'Last Name',
-          nadaHint: isArabic ? 'أدخل اسم العائلة' : 'Enter your last name',
+          nadaLabel: nadaIsArabic ? 'اسم العائلة' : 'Last Name',
+          nadaHint: nadaIsArabic ? 'أدخل اسم العائلة' : 'Enter your last name',
           nadaIcon: Icons.person_outline,
-          nadaOnChanged: (value) => _formData.nadaLastName = value,
+          nadaOnChanged: (value) => _nadaFormData.nadaLastName = value,
           nadaValidator: (value) => NadaFormValidators.nadaValidateField(
             value, 
-            isArabic ? 'اسم العائلة' : 'last name'
+            nadaIsArabic ? 'اسم العائلة' : 'last name'
           ),
         ),
         const SizedBox(height: 24),
         NadaCustomTextField(
-          nadaLabel: isArabic ? 'البريد الإكتروني' : 'Email Address',
-          nadaHint: isArabic ? 'أدخل بريدك الإلكتروني' : 'Enter your email address',
+          nadaLabel: nadaIsArabic ? 'البريد الإكتروني' : 'Email Address',
+          nadaHint: nadaIsArabic ? 'أدخل بريدك الإلكتروني' : 'Enter your email address',
           nadaIcon: Icons.email_outlined,
           nadaIsEmail: true,
-          nadaOnChanged: (value) => _formData.nadaEmail = value,
+          nadaOnChanged: (value) => _nadaFormData.nadaEmail = value,
           nadaValidator: (value) => NadaFormValidators.nadaValidateField(
             value, 
-            isArabic ? 'البريد الإلكتروني' : 'email',
+            nadaIsArabic ? 'البريد الإلكتروني' : 'email',
             isEmail: true
           ),
         ),
         const SizedBox(height: 24),
         NadaCustomTextField(
-          nadaLabel: isArabic ? 'رقم الهاتف' : 'Phone Number',
-          nadaHint: isArabic ? 'أدخل رقم هاتفك' : 'Enter your phone number',
+          nadaLabel: nadaIsArabic ? 'رقم الهاتف' : 'Phone Number',
+          nadaHint: nadaIsArabic ? 'أدخل رقم هاتفك' : 'Enter your phone number',
           nadaIcon: Icons.phone_outlined,
-          nadaOnChanged: (value) => _formData.nadaPhoneNumber = value,
+          nadaOnChanged: (value) => _nadaFormData.nadaPhoneNumber = value,
           nadaValidator: (value) => NadaFormValidators.nadaValidateField(
             value, 
-            isArabic ? 'رقم الهاتف' : 'phone number'
+            nadaIsArabic ? 'رقم الهاتف' : 'phone number'
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSubmitButton() {
-    return SizedBox(
-      height: 54,
-      child: ElevatedButton(
-        onPressed: _handleSubmit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: NadaAppColors.nadaPrimary,
-          foregroundColor: NadaAppColors.nadaWhite,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
+  Widget _nadaBuildSubmitButton() {
+    return ScaleTransition(
+      scale: _nadaButtonAnimation,
+      child: Container(
+        height: 54,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [NadaAppColors.nadaGradientStart, NadaAppColors.nadaGradientEnd],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        ).copyWith(
-          overlayColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.hovered)) {
-              return NadaAppColors.nadaHover;
-            }
-            return null;
-          }),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: NadaAppColors.nadaGradientStart.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Text(
-          isArabic ? 'إرسال' : 'Submit',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-            color: NadaAppColors.nadaWhite,
+        child: ElevatedButton(
+          onPressed: () {
+            _nadaButtonController.forward().then((_) {
+              _nadaButtonController.reverse();
+            });
+            _nadaHandleSubmit();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: Text(
+            nadaIsArabic ? 'إرسال' : 'Submit',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: NadaAppColors.nadaWhite,
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _handleSubmit() {
-    if (_formKey.currentState!.validate()) {
-      _showSuccessMessage();
+  void _nadaHandleSubmit() {
+    if (_nadaFormKey.currentState!.validate()) {
+      _nadaShowSuccessMessage();
     }
   }
 
-  void _showSuccessMessage() {
+  void _nadaShowSuccessMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Row(
@@ -296,6 +302,66 @@ class _MyFormState extends State<MyForm> {
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         margin:  EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  Widget _nadaBuildLanguageToggle() {
+    return Container(
+      decoration: BoxDecoration(
+        color: NadaAppColors.nadaPrimary,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            _nadaLanguageController.forward(from: 0);
+            setState(() {
+              nadaIsArabic = !nadaIsArabic;
+            });
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RotationTransition(
+                  turns: _nadaRotateAnimation,
+                  child: const Icon(
+                    Icons.language,
+                    color: NadaAppColors.nadaWhite,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    nadaIsArabic ? 'EN' : 'عربي',
+                    key: ValueKey<bool>(nadaIsArabic),
+                    style: const TextStyle(
+                      color: NadaAppColors.nadaWhite,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
