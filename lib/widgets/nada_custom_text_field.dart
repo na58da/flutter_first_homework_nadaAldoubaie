@@ -8,6 +8,7 @@ class NadaCustomTextField extends StatefulWidget {
   final bool nadaIsEmail;
   final Function(String) nadaOnChanged;
   final String? Function(String?) nadaValidator;
+  final Color nadaTextColor;
 
   const NadaCustomTextField({
     super.key,
@@ -17,6 +18,7 @@ class NadaCustomTextField extends StatefulWidget {
     this.nadaIsEmail = false,
     required this.nadaOnChanged,
     required this.nadaValidator,
+    this.nadaTextColor = NadaAppColors.nadaWhite,
   });
 
   @override
@@ -45,21 +47,21 @@ class _NadaCustomTextFieldState extends State<NadaCustomTextField>
     return InputDecoration(
       labelText: widget.nadaLabel,
       hintText: widget.nadaHint,
-      prefixIcon: Icon(widget.nadaIcon, color: NadaAppColors.nadaTextSecondary),
-      border: const OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-        borderSide: BorderSide(color: NadaAppColors.nadaTextSecondary),
+      prefixIcon: Icon(widget.nadaIcon, color: widget.nadaTextColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: widget.nadaTextColor),
       ),
-      enabledBorder: const OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-        borderSide: BorderSide(color: NadaAppColors.nadaTextSecondary),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: widget.nadaTextColor.withOpacity(0.7)),
       ),
-      focusedBorder: const OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-        borderSide: BorderSide(color: NadaAppColors.nadaPrimary),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: widget.nadaTextColor),
       ),
-      labelStyle: const TextStyle(fontFamily: 'CustomFont'),
-      hintStyle: const TextStyle(fontFamily: 'CustomFont'),
+      labelStyle: TextStyle(color: widget.nadaTextColor),
+      hintStyle: TextStyle(color: widget.nadaTextColor.withOpacity(0.7)),
     );
   }
 
@@ -77,8 +79,8 @@ class _NadaCustomTextFieldState extends State<NadaCustomTextField>
               duration: const Duration(milliseconds: 200),
               child: Icon(widget.nadaIcon, 
                 color: _isFocused 
-                  ? NadaAppColors.nadaPrimary 
-                  : NadaAppColors.nadaTextSecondary
+                  ? widget.nadaTextColor 
+                  : widget.nadaTextColor.withOpacity(0.7)
               ),
             ),
           ),

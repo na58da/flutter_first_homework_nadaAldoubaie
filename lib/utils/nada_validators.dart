@@ -1,14 +1,40 @@
 class NadaFormValidators {
-  static String? nadaValidateField(String? value, String fieldName, {bool isEmail = false}) {
+  static String? nadaValidateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return fieldName.contains('ال') 
-          ? 'يرجى إدخال $fieldName' 
-          : 'Please enter your $fieldName';
+      return 'Please enter your email';
     }
-    if (isEmail && !value.contains('@')) {
-      return fieldName.contains('ال')
-          ? 'يرجى إدخال بريد إلكتروني صحيح'
-          : 'Please enter a valid email address';
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  static String? nadaValidateTextOnly(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter text';
+    }
+    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+      return 'Please enter only letters';
+    }
+    return null;
+  }
+
+  static String? nadaValidatePhoneNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your phone number';
+    }
+    if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value)) {
+      return 'Please enter a valid phone number';
+    }
+    return null;
+  }
+
+  static String? nadaValidateNumberOnly(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a number';
+    }
+    if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+      return 'Please enter only numbers';
     }
     return null;
   }
