@@ -1,41 +1,43 @@
+import 'package:get/get.dart';
+
 class NadaFormValidators {
   static String? nadaValidateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your email';
+      return 'enter_email_required'.tr;
     }
     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-      return 'Please enter a valid email address';
+      return 'enter_valid_email'.tr;
     }
     return null;
   }
 
   static String? nadaValidateTextOnly(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter text';
+      return 'enter_text_required'.tr;
     }
     if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-      return 'Please enter only letters';
+      return 'enter_letters_only'.tr;
     }
     return null;
   }
 
   static String? nadaValidatePhoneNumber(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your phone number';
+      return 'enter_phone_required'.tr;
     }
     if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value)) {
-      return 'Please enter a valid phone number';
+      return 'enter_valid_phone'.tr;
     }
     return null;
   }
 
   static String? nadaValidateNumberOnly(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter a number';
+      return 'enter_number_required'.tr;
     }
     if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-      return 'Please enter only numbers';
+      return 'enter_numbers_only'.tr;
     }
     return null;
   }
-} 
+}

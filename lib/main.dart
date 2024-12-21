@@ -5,8 +5,12 @@ import 'utils/nada_validators.dart';
 import 'widgets/nada_custom_text_field.dart';
 import 'widgets/nada_custom_button.dart';
 import 'painters/nada_painter.dart';
+import 'package:get/get.dart';
+import 'utils/nada_translations.dart';
+import 'controllers/nada_theme_controller.dart';
 
 void main() {
+  Get.put(NadaThemeController());
   runApp(const NadaApp());
 }
 
@@ -21,8 +25,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
   final _nadaFormKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _nadaFormData = NadaFormData();
-  bool nadaIsArabic = false;
-  bool isDarkMode = false;
+  final _themeController = Get.find<NadaThemeController>();
 
   late AnimationController _nadaButtonController;
   late Animation<double> _nadaButtonAnimation;
@@ -32,7 +35,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize button animation
     _nadaButtonController = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -63,15 +66,24 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      translations: NadaTranslations(),
+      locale: const Locale('en'),
+      fallbackLocale: const Locale('en'),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: _themeController.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: Builder(
-        builder: (context) => Scaffold(
-          key: _scaffoldKey,
-          appBar: _nadaBuildAppBar(),
-          backgroundColor: isDarkMode ? Colors.grey[900] : NadaAppColors.nadaWhite,
-          body: _nadaBuildBody(),
+        builder: (context) => Obx(
+          () => Scaffold(
+            key: _scaffoldKey,
+            appBar: _nadaBuildAppBar(),
+            backgroundColor: _themeController.isDarkMode
+                ? Colors.grey[900]
+                : NadaAppColors.nadaWhite,
+            body: _nadaBuildBody(),
+          ),
         ),
       ),
     );
@@ -80,7 +92,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
   PreferredSizeWidget _nadaBuildAppBar() {
     return AppBar(
       title: Text(
-        nadaIsArabic ? 'استمارة ندى' : 'Nada\'s Form',
+        'nada_form'.tr,
         style: const TextStyle(
           fontWeight: FontWeight.w500,
           letterSpacing: 0.5,
@@ -90,7 +102,10 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [NadaAppColors.nadaGradientStart, NadaAppColors.nadaGradientEnd],
+            colors: [
+              NadaAppColors.nadaGradientStart,
+              NadaAppColors.nadaGradientEnd
+            ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -101,14 +116,12 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
       actions: [
         Row(
           children: [
-            const Text('Dark Mode'),
-            Switch(
-              value: isDarkMode,
-              onChanged: (value) {
-                setState(() {
-                  isDarkMode = value;
-                });
-              },
+            Text('dark_mode'.tr),
+            Obx(
+              () => Switch(
+                value: _themeController.isDarkMode,
+                onChanged: (value) => _themeController.toggleTheme(),
+              ),
             ),
           ],
         ),
@@ -127,7 +140,8 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
           ),
         ),
         Directionality(
-          textDirection: nadaIsArabic ? TextDirection.rtl : TextDirection.ltr,
+          textDirection:
+              _themeController.isArabic ? TextDirection.rtl : TextDirection.ltr,
           child: Center(
             child: SingleChildScrollView(
               child: Container(
@@ -146,7 +160,10 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
                     child: Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [NadaAppColors.nadaGradientStart, NadaAppColors.nadaGradientEnd],
+                          colors: [
+                            NadaAppColors.nadaGradientStart,
+                            NadaAppColors.nadaGradientEnd
+                          ],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                         ),
@@ -158,7 +175,9 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
                       child: Form(
                         key: _nadaFormKey,
                         child: Column(
-                          crossAxisAlignment: nadaIsArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          crossAxisAlignment: _themeController.isArabic
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -166,7 +185,9 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
                               children: [
                                 Expanded(
                                   child: Container(
-                                    alignment: nadaIsArabic ? Alignment.centerRight : Alignment.centerLeft,
+                                    alignment: _themeController.isArabic
+                                        ? Alignment.centerRight
+                                        : Alignment.centerLeft,
                                     child: _nadaBuildHeader(),
                                   ),
                                 ),
@@ -176,9 +197,13 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
-                            SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.04),
                             _nadaBuildFormFields(),
-                            SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.04),
                             Center(
                               child: _nadaBuildSubmitButton(),
                             ),
@@ -198,10 +223,12 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
 
   Widget _nadaBuildHeader() {
     return Column(
-      crossAxisAlignment: nadaIsArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: _themeController.isArabic
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         Text(
-          nadaIsArabic ? 'المعلومات الشخصية' : 'Personal Information',
+          'personal_info'.tr,
           style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w500,
@@ -211,7 +238,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 8),
         Text(
-          nadaIsArabic ? 'يرجى ملء التفاصيل الخاصة بك أدناه' : 'Please fill in your details below',
+          'fill_details'.tr,
           style: const TextStyle(
             fontSize: 15,
             color: NadaAppColors.nadaWhite,
@@ -226,8 +253,8 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
     return Column(
       children: [
         NadaCustomTextField(
-          nadaLabel: nadaIsArabic ? 'رقم الهوية' : 'ID Number',
-          nadaHint: nadaIsArabic ? 'أدخل رقم الهوية' : 'Enter your ID number',
+          nadaLabel: 'id_number'.tr,
+          nadaHint: 'enter_id'.tr,
           nadaIcon: Icons.numbers_outlined,
           nadaOnChanged: (value) => _nadaFormData.nadaId = value,
           nadaValidator: NadaFormValidators.nadaValidateNumberOnly,
@@ -235,8 +262,8 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 24),
         NadaCustomTextField(
-          nadaLabel: nadaIsArabic ? 'الاسم الأول' : 'First Name',
-          nadaHint: nadaIsArabic ? 'أدخل اسمك الأول' : 'Enter your first name',
+          nadaLabel: 'first_name'.tr,
+          nadaHint: 'enter_first_name'.tr,
           nadaIcon: Icons.person_outline,
           nadaOnChanged: (value) => _nadaFormData.nadaFirstName = value,
           nadaValidator: NadaFormValidators.nadaValidateTextOnly,
@@ -244,8 +271,8 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 24),
         NadaCustomTextField(
-          nadaLabel: nadaIsArabic ? 'البريد الإلكتروني' : 'Email Address',
-          nadaHint: nadaIsArabic ? 'أدخل بريدك الإلكتروني' : 'Enter your email address',
+          nadaLabel: 'email'.tr,
+          nadaHint: 'enter_email'.tr,
           nadaIcon: Icons.email_outlined,
           nadaOnChanged: (value) => _nadaFormData.nadaEmail = value,
           nadaValidator: NadaFormValidators.nadaValidateEmail,
@@ -253,8 +280,8 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 24),
         NadaCustomTextField(
-          nadaLabel: nadaIsArabic ? 'رقم الهاتف' : 'Phone Number',
-          nadaHint: nadaIsArabic ? 'أدخل رقم هاتفك' : 'Enter your phone number',
+          nadaLabel: 'phone'.tr,
+          nadaHint: 'enter_phone'.tr,
           nadaIcon: Icons.phone_outlined,
           nadaOnChanged: (value) => _nadaFormData.nadaPhoneNumber = value,
           nadaValidator: NadaFormValidators.nadaValidatePhoneNumber,
@@ -274,9 +301,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
             ),
             Expanded(
               child: Text(
-                nadaIsArabic 
-                  ? 'أوافق على الشروط والأحكام'
-                  : 'I agree to the terms and conditions',
+                'terms_conditions'.tr,
                 style: const TextStyle(
                   color: NadaAppColors.nadaWhite,
                   fontSize: 14,
@@ -291,7 +316,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
 
   Widget _nadaBuildSubmitButton() {
     return NadaCustomButton(
-      nadaText: nadaIsArabic ? 'إرسال' : 'Submit',
+      nadaText: 'submit'.tr,
       nadaOnPressed: _nadaHandleSubmit,
       nadaAnimationController: _nadaButtonController,
       nadaAnimation: _nadaButtonAnimation,
@@ -299,14 +324,8 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
   }
 
   void _nadaHandleSubmit() {
-
-    
     if (_nadaFormKey.currentState?.validate() ?? false) {
-    
-      
       if (_nadaFormData.nadaAcceptTerms) {
-   
-        
         final context = _scaffoldKey.currentContext;
         if (context != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -316,9 +335,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
                   const Icon(Icons.check_circle, color: Colors.white),
                   const SizedBox(width: 8),
                   Text(
-                    nadaIsArabic 
-                      ? 'تم إرسال النموذج بنجاح'
-                      : 'Form submitted successfully',
+                    'form_submitted'.tr,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -342,8 +359,6 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
           );
         }
       } else {
-
-        
         final context = _scaffoldKey.currentContext;
         if (context != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -353,9 +368,7 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
                   const Icon(Icons.error_outline, color: Colors.white),
                   const SizedBox(width: 8),
                   Text(
-                    nadaIsArabic 
-                      ? 'يرجى الموافقة على الشروط والأحكام'
-                      : 'Please accept the terms and conditions',
+                    'accept_terms'.tr,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -383,26 +396,23 @@ class NadaAppState extends State<NadaApp> with TickerProviderStateMixin {
   }
 
   Widget _nadaBuildLanguageToggle() {
-    return NadaCustomButton(
-      nadaText: nadaIsArabic ? 'EN' : 'عربي',
-
-      nadaIsSmall: true,
-      nadaIcon: RotationTransition(
-        turns: _nadaRotateAnimation,
-      
-        child: const Icon(
-          Icons.language,
-          color: Colors.white,
-          size: 20,
-        
+    return Obx(
+      () => NadaCustomButton(
+        nadaText: _themeController.isArabic ? 'EN' : 'عربي',
+        nadaIsSmall: true,
+        nadaIcon: RotationTransition(
+          turns: _nadaRotateAnimation,
+          child: const Icon(
+            Icons.language,
+            color: Colors.white,
+            size: 20,
+          ),
         ),
+        nadaOnPressed: () {
+          _nadaLanguageController.forward(from: 0);
+          _themeController.toggleLanguage();
+        },
       ),
-      nadaOnPressed: () {
-        _nadaLanguageController.forward(from: 0);
-        setState(() {
-          nadaIsArabic = !nadaIsArabic;
-        });
-      },
     );
   }
 }
@@ -412,30 +422,38 @@ class CurveClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     var path = Path();
     path.moveTo(0, 30);
-    
+
     // Top curve - wave style
     path.quadraticBezierTo(
-      size.width * 0.25, 0,
-      size.width * 0.5, 30,
+      size.width * 0.25,
+      0,
+      size.width * 0.5,
+      30,
     );
     path.quadraticBezierTo(
-      size.width * 0.75, 60,
-      size.width, 30,
+      size.width * 0.75,
+      60,
+      size.width,
+      30,
     );
-    
+
     // Right line
     path.lineTo(size.width, size.height - 30);
-    
+
     // Bottom curve - wave style
     path.quadraticBezierTo(
-      size.width * 0.75, size.height - 60,
-      size.width * 0.5, size.height - 30,
+      size.width * 0.75,
+      size.height - 60,
+      size.width * 0.5,
+      size.height - 30,
     );
     path.quadraticBezierTo(
-      size.width * 0.25, size.height,
-      0, size.height - 30,
+      size.width * 0.25,
+      size.height,
+      0,
+      size.height - 30,
     );
-    
+
     path.close();
     return path;
   }
